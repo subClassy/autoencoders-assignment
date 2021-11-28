@@ -74,7 +74,7 @@ class Autoencoder_Trainer(object):
         self.init_dataset(path_prefix)
         self.model = autoencoder_model
         self.model.to(self.device)
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=1e-5)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=0.00005)
 
     def init_dataset(self, path_prefix=""):
         # load and preprocess dataset
