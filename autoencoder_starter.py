@@ -47,8 +47,12 @@ def Plot_Kernel(_model):
     ----------
     _model: Autoencoder
     '''
-    # needs your implementation  
-    pass
+    param_list = list(_model.encoder.parameters())
+    weights = param_list[0].cpu()
+    weights = weights.view(-1, 28, 28)
+    for i in range(weights.shape[0]):
+        weights[i] = (weights[i] - torch.min(weights[i])) / (torch.max(weights[i]) - torch.min(weights[i]))
+    display_images_in_a_row(weights)
 
 
 def display_images_in_a_row(images, file_path='./tmp.png', display=True):
@@ -115,7 +119,7 @@ class Autoencoder_Trainer(object):
             data = data.to(self.device)
             self.optimizer.zero_grad()
             data = data.view(-1, 28 * 28)
-            recon_batch = self.model(data)
+            recon_batch = self.model(data, self.device)
             loss = self.loss_function(recon_batch, data)
             loss.backward()
             train_loss += loss.item()
@@ -132,7 +136,7 @@ class Autoencoder_Trainer(object):
             for i, (data, _) in tqdm(enumerate(self.val_loader), total=len(self.val_loader)):
                 data = data.to(self.device)
                 data = data.view(-1, 28 * 28)
-                recon_batch = self.model(data)
+                recon_batch = self.model(data, self.device)
                 val_loss += self.loss_function(recon_batch, data).item()
 
         val_loss /= len(self.val_loader.dataset) / 32  # 32 is the batch size
