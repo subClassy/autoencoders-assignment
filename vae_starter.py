@@ -95,12 +95,11 @@ class VAE_Trainer(object):
         self.valset = valset
         self.trainset = trainset
 
-    def loss_function(self, recon_x, x, mu, var):
+    def loss_function(self, recon_x, x, mu, logvar):
         # Note that this function should be modified for the VAE part.
         # KLD term should be added to the final Loss.
-        KLD = (var**2 + mu**2 - torch.log(var) - 1/2).sum()
+        KLD = torch.mean((torch.exp(logvar) + mu**2 - logvar - 1).sum() * 0.5)
         BCE = F.mse_loss(recon_x, x)
-        
         Loss = BCE + KLD
         return Loss
 
