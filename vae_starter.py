@@ -7,6 +7,8 @@ from torch.autograd import Variable
 from torchvision.utils import save_image
 from tqdm import tqdm
 import numpy as np
+import torch.distributions.normal as Normal
+import torch.distributions.kl as KL
 
 import matplotlib.pyplot as plt
 import imageio
@@ -98,10 +100,18 @@ class VAE_Trainer(object):
     def loss_function(self, recon_x, x, mu, logvar):
         # Note that this function should be modified for the VAE part.
         # KLD term should be added to the final Loss.
-        KLD = torch.mean((torch.exp(logvar) + mu**2 - logvar - 1).sum() * 0.5)
-        BCE = F.mse_loss(recon_x, x)
-        Loss = BCE + KLD
-        return Loss
+        batch_size = torch.tensor(x.size()[0], device=x.device)
+        device = x.device
+        stds = torch.exp(0.5 * logvar)
+        encoder_dist = Normal.Normal(mu, stds)
+        prior_dist = Normal.Normal(torch.zeros_like(mu), torch.ones_like(stds))
+        kl_loss = torch.sum(KL.kl_divergence(encoder_dist, prior_dist)) / batch_size
+        reconstruction_loss = torch.sum(torch.square(recon_x - x)) / batch_size
+        loss = kl_loss + reconstruction_loss
+        # KLD = torch.mean((torch.exp(logvar) + mu**2 - logvar - 1).sum() * 0.5)
+        # BCE = F.mse_loss(recon_x, x)
+        # Loss = BCE + KLD
+        return loss
 
     def get_train_set(self):
         images = torch.vstack([x for x, _ in self.train_loader])  # get the entire train set
