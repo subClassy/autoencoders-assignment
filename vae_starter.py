@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import imageio
 import matplotlib.image as mpimg
 from scipy import ndimage
+from sklearn import manifold
 
 
 def scatter_plot(latent_representations, labels):
@@ -35,6 +36,10 @@ def scatter_plot(latent_representations, labels):
         base = plt.cm.get_cmap(base_cmap)
         return base.from_list(base.name + str(n), base(np.linspace(0, 1, n)), n)
 
+    tsne = manifold.TSNE(
+        n_components=2, init="random", random_state=0, perplexity=30
+    )
+    latent_representations = tsne.fit_transform(latent_representations)
     plt.figure(figsize=(10, 10))
     plt.scatter(latent_representations[:, 0], latent_representations[:, 1], cmap=discrete_cmap(10, 'jet'), c=labels,
                 edgecolors='black')
@@ -100,18 +105,16 @@ class VAE_Trainer(object):
     def loss_function(self, recon_x, x, mu, logvar):
         # Note that this function should be modified for the VAE part.
         # KLD term should be added to the final Loss.
-        batch_size = torch.tensor(x.size()[0], device=x.device)
-        device = x.device
-        stds = torch.exp(0.5 * logvar)
-        encoder_dist = Normal.Normal(mu, stds)
-        prior_dist = Normal.Normal(torch.zeros_like(mu), torch.ones_like(stds))
-        kl_loss = torch.sum(KL.kl_divergence(encoder_dist, prior_dist)) / batch_size
-        reconstruction_loss = torch.sum(torch.square(recon_x - x)) / batch_size
-        loss = kl_loss + reconstruction_loss
+        sigma = torch.exp(0.5 * logvar)
+        
+        KLD = torch.mean(-torch.log(sigma) + ((sigma**2 + mu**2)/2) - 0.5)
+        BCE = F.mse_loss(recon_x, x)
+        
+        Loss = BCE + KLD
         # KLD = torch.mean((torch.exp(logvar) + mu**2 - logvar - 1).sum() * 0.5)
         # BCE = F.mse_loss(recon_x, x)
         # Loss = BCE + KLD
-        return loss
+        return Loss
 
     def get_train_set(self):
         images = torch.vstack([x for x, _ in self.train_loader])  # get the entire train set
