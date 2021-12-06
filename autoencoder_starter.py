@@ -75,16 +75,18 @@ class Autoencoder_Trainer(object):
         self.model = autoencoder_model
         self.model.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=1e-5)
+        self.training_losses = []
+        self.val_losses = []
 
     def init_dataset(self, path_prefix=""):
         # load and preprocess dataset
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
         trainTransform = torchvision.transforms.Compose(
             [torchvision.transforms.ToTensor(), torchvision.transforms.Normalize((0.1307,), (0.3081,))])
-        trainset = torchvision.datasets.MNIST(root='{}/./data'.format(path_prefix), train=True, download=True,
+        trainset = torchvision.datasets.FashionMNIST(root='{}/./data'.format(path_prefix), train=True, download=True,
                                               transform=transform)
         train_loader = torch.utils.data.DataLoader(trainset, batch_size=32, shuffle=False, num_workers=4)
-        valset = torchvision.datasets.MNIST(root='{}/./data'.format(path_prefix), train=False, download=True,
+        valset = torchvision.datasets.FashionMNIST(root='{}/./data'.format(path_prefix), train=False, download=True,
                                             transform=transform)
         val_loader = torch.utils.data.DataLoader(valset, batch_size=32, shuffle=False, num_workers=4)
 
@@ -127,6 +129,8 @@ class Autoencoder_Trainer(object):
         print('====> Epoch: {} Average loss: {:.4f}'.format(
             epoch, train_loss))
 
+        self.training_losses.append(train_loss)
+
     def validate(self, epoch):
         self.model.eval()
         val_loss = 0
@@ -139,3 +143,5 @@ class Autoencoder_Trainer(object):
 
         val_loss /= len(self.val_loader.dataset) / 32  # 32 is the batch size
         print('====> Val set loss (reconstruction error) : {:.4f}'.format(val_loss))
+
+        self.val_losses.append(val_loss)
