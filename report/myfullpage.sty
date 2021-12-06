@@ -1,0 +1,51 @@
+\marginparwidth 0pt
+\oddsidemargin  0pt
+\evensidemargin  0pt
+\marginparsep 0pt
+
+\parindent 0pt
+\parskip 5pt
+
+\topmargin   0pt
+
+\textwidth   6.5in
+\textheight  9.0 in
+%\textwidth   5.0in
+%\textheight  7.0 in
+
+\def\eqalign#1{\null\,\vcenter{\openup1\jot \m@th
+ \ialign{\strut\hfil$\displaystyle{##}$&$\displaystyle{{}##}$\hfil
+     \crcr#1\crcr}}\,}
+
+\def\bvec#1{\mbox{\bf #1}}
+\def\tensor#1{\mbox{\sf \bf #1}}
+\def\fdbox#1{\fbox{\mbox{$\displaystyle #1$}}}
+
+\newcommand{\ft}{\stackrel{\cal F}{\longleftrightarrow}}
+\newcommand{\ift}{\stackrel{{\cal F}^{-1}}{\longleftrightarrow}}
+
+%\newtheorem{example}{Example}[chapter]
+
+\newcommand{\bex}{\begin{quote}\begin{example}\begin{small}}
+\newcommand{\eex}{$\bowtie$ \end{small}\end{example}\end{quote}}
+
+%\newcommand{\bex}{\begin{quote}\begin{small} {\sc Example:} }
+%\newcommand{\eex}{$\bowtie$ \end{small}\end{quote}}
+
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+
+\newcommand{\bfig}{\begin{figure}[hbt]}
+\newcommand{\efig}{\end{figure}}
+
+\newenvironment{myeqnarray}
+	{\setlength{\arraycolsep}{1pt}
+	 \begin{eqnarray}}%
+	{\end{eqnarray}}
+
+\newenvironment{myeqnarray*}
+        {\setlength{\arraycolsep}{1pt}
+         \begin{eqnarray*}}%
+        {\end{eqnarray*}}
+
+
