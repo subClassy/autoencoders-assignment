@@ -84,7 +84,7 @@ class Autoencoder_Trainer(object):
 
     def init_dataset(self, path_prefix=""):
         # load and preprocess dataset
-        transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
+        transform = transforms.Compose([transforms.ToTensor()])
         trainTransform = torchvision.transforms.Compose(
             [torchvision.transforms.ToTensor(), torchvision.transforms.Normalize((0.1307,), (0.3081,))])
         trainset = torchvision.datasets.FashionMNIST(root='{}/./data'.format(path_prefix), train=True, download=True,
