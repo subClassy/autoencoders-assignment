@@ -50,9 +50,14 @@ def Plot_Kernel(_model):
     param_list = list(_model.encoder.parameters())
     weights = param_list[0].cpu()
     weights = weights.view(-1, 28, 28)
-    for i in range(weights.shape[0]):
-        weights[i] = (weights[i] - torch.min(weights[i])) / (torch.max(weights[i]) - torch.min(weights[i]))
-    display_images_in_a_row(weights)
+    fig, axes = plt.subplots(5, 6)
+    vmin, vmax = weights.min(), weights.max()
+    for coef, ax in zip(weights, axes.ravel()):
+        ax.matshow(coef.detach().numpy(), vmin=0.5 * vmin, vmax=0.5 * vmax)
+        ax.set_xticks(())
+        ax.set_yticks(())
+
+    plt.show()
 
 
 def display_images_in_a_row(images, file_path='./tmp.png', display=True):
@@ -84,7 +89,7 @@ class Autoencoder_Trainer(object):
 
     def init_dataset(self, path_prefix=""):
         # load and preprocess dataset
-        transform = transforms.Compose([transforms.ToTensor()])
+        transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
         trainTransform = torchvision.transforms.Compose(
             [torchvision.transforms.ToTensor(), torchvision.transforms.Normalize((0.1307,), (0.3081,))])
         trainset = torchvision.datasets.FashionMNIST(root='{}/./data'.format(path_prefix), train=True, download=True,
