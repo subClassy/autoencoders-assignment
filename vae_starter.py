@@ -57,9 +57,14 @@ def Plot_Kernel(_model):
     param_list = list(_model.encoder.parameters())
     weights = param_list[0].cpu()
     weights = weights.view(-1, 28, 28)
-    for i in range(weights.shape[0]):
-        weights[i] = (weights[i] - torch.min(weights[i])) / (torch.max(weights[i]) - torch.min(weights[i]))
-    display_images_in_a_row(weights)
+    fig, axes = plt.subplots(5, 6)
+    vmin, vmax = weights.min(), weights.max()
+    for coef, ax in zip(weights, axes.ravel()):
+        ax.matshow(coef.detach().numpy(), vmin=0.5 * vmin, vmax=0.5 * vmax)
+        ax.set_xticks(())
+        ax.set_yticks(())
+
+    plt.show()
 
 
 def display_images_in_a_row(images, file_path='./tmp.png', display=True):
@@ -107,13 +112,10 @@ class VAE_Trainer(object):
         # KLD term should be added to the final Loss.
         sigma = torch.exp(0.5 * logvar)
         
-        KLD = torch.mean(-torch.log(sigma) + ((sigma**2 + mu**2)/2) - 0.5)
-        BCE = F.mse_loss(recon_x, x)
+        KLD = torch.sum(-torch.log(sigma) + ((sigma**2 + mu**2)/2) - 0.5)
+        BCE = F.mse_loss(recon_x, x, reduction='sum')
         
         Loss = BCE + KLD
-        # KLD = torch.mean((torch.exp(logvar) + mu**2 - logvar - 1).sum() * 0.5)
-        # BCE = F.mse_loss(recon_x, x)
-        # Loss = BCE + KLD
         return Loss
 
     def get_train_set(self):
@@ -138,7 +140,7 @@ class VAE_Trainer(object):
             train_loss += loss.item()
             self.optimizer.step()
 
-        train_loss /= len(self.train_loader.dataset) / 32  # 32 is the batch size
+        train_loss /= len(self.train_loader.dataset)  # 32 is the batch size
         print('====> Epoch: {} Average loss: {:.4f}'.format(
             epoch, train_loss))
 
@@ -152,5 +154,5 @@ class VAE_Trainer(object):
                 recon_batch, mu, var = self.model(data, self.device)
                 val_loss += self.loss_function(recon_batch, data, mu, var).item()
 
-        val_loss /= len(self.val_loader.dataset) / 32  # 32 is the batch size
+        val_loss /= len(self.val_loader.dataset)   # 32 is the batch size
         print('====> Val set loss (reconstruction error) : {:.4f}'.format(val_loss))
